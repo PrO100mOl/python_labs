@@ -4,6 +4,7 @@ from ..lib.text import normalize, tokenize, count_freq, top_n
 
 def main() -> None:
     text = sys.stdin.read()
+    # text = 'Привет, мир! Привет!!!\n'
     tokens = tokenize(normalize(text))
     freq = count_freq(tokens)
     print( tokenize(normalize(text)))
