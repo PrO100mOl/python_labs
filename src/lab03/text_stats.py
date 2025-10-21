@@ -6,7 +6,7 @@ def main() -> None:
     text = sys.stdin.read()
     tokens = tokenize(normalize(text))
     freq = count_freq(tokens)
-
+    print( tokenize(normalize(text)))
     print(f"Всего слов: {len(tokens)}")
     print(f"Уникальных слов: {len(set(tokens))}")
     print("Топ-5:")

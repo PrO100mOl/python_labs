@@ -20,11 +20,20 @@ import re
 
 def tokenize(text: str) -> list[str]:
     g = ''
+    h = 0
     for i in range(len(text)):
-        if not(re.fullmatch(r"[\w-]", text[i])):
+        if h == 1:
+            h = 0
+            continue
+        if text[i]+"b" == "\b":
+            text = text[:i]+"  "+text[i+2:]
+            h=1
+        elif not(re.fullmatch(r"[\w-]", text[i])):
             text = text[:i]+" "+text[i+1:]
     text = text.split()
     return text
+
+
 
 # Разбить на «слова» по небуквенно-цифровым разделителям.
 # В качестве слова считаем последовательности символов \w (буквы/цифры/подчёркивание) плюс дефис внутри слова (например, по-настоящему).
