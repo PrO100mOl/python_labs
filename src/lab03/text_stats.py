@@ -3,19 +3,24 @@ import sys
 from ..lib.text import normalize, tokenize, count_freq, top_n
 
 def main() -> None:
-    text = sys.stdin.read()
-    # text = 'Привет, мир! Привет!!!\n'
+    text = str(sys.stdin.read())
+    # text2 = 'Привет, мир! Привет!!!\n'
     tokens = tokenize(normalize(text))
     freq = count_freq(tokens)
-    print( tokenize(normalize(text)))
+
     print(f"Всего слов: {len(tokens)}")
     print(f"Уникальных слов: {len(set(tokens))}")
     print("Топ-5:")
-    for w, c in top_n(freq, 5):
+    for w, c in sorted(freq.items())[::-1]:
         print(f"{w}:{c}")
 
 if __name__ == "__main__":
     main()
+
+
+# chcp 65001                                                                                     
+# >> $env:PYTHONUTF8=1                                                                                                              
+# >> $OutputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
 
 # cd /home/mol/Desktop/python_labs
