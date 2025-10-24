@@ -25,7 +25,7 @@ def tokenize(text: str) -> list[str]:
         # if h == 1:
         #     h = 0
         #     continue
-        if text[i]+"g" == "\g":
+        if (text[i]+"g") == r"\g":
             text = text[:i]+"  "+text[i+2:]
             # h=1
         elif not(re.fullmatch(r"[\w-]", text[i])):
