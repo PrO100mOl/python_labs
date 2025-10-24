@@ -52,7 +52,7 @@ def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
     return sorted(freq.items())[:n]
 
 
-# Вернуть топ-N по убыванию частоты; при равенстве — по алфавиту слова.
+# Вернуть топ-N по убыванию частоты;
 
 
 if __name__ == "__main__":
