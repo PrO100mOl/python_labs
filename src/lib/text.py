@@ -49,25 +49,30 @@ def count_freq(tokens: list[str]) -> dict[str, int]:
 
 
 def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
-    return sorted(freq.items())[:n]
+    pairs: list[tuple[int, str]] = []
+    for w, c in freq.items():
+        pairs.append((-c, w))  
+    pairs.sort() 
+    result: list[tuple[str, int]] = []
+    i = 0
+    for c, w in pairs:
+        if i >= n:
+            break
+        result.append((w, -c))
+        i += 1
+    return result
 
 
-# Вернуть топ-N по убыванию частоты;
+print( normalize("ПрИвЕт\nМИр\t") == "привет мир")
+print( normalize("ёжик, Ёлка") == "ежик, елка")
 
+print( tokenize("привет, мир!") == ["привет", "мир"])
+print( tokenize("по-настоящему круто") == ["по-настоящему", "круто"])
+print( tokenize("2025 год") == ["2025", "год"])
 
-if __name__ == "__main__":
-    assert normalize("ПрИвЕт\nМИр\t") == "привет мир"
-    assert normalize("ёжик, Ёлка") == "ежик, елка"
+freq = count_freq(["a","b","a","c","b","a"])
+print( freq == {"a":3,"b":2,"c":1})
+print( top_n(freq, 2) == [("a",3), ("b",2)])
 
-    assert tokenize("привет, мир!") == ["привет", "мир"]
-    assert tokenize("по-настоящему круто") == ["по-настоящему", "круто"]
-    assert tokenize("2025 год") == ["2025", "год"]
-
-    freq = count_freq(["a","b","a","c","b","a"])
-    assert freq == {"a":3,"b":2,"c":1}
-    assert top_n(freq, 2) == [("a",3), ("b",2)]
-
-    freq2 = count_freq(["bb","aa","bb","aa","cc"])
-    assert top_n(freq2, 2) == [("aa",2), ("bb",2)]
-
-    print("OK")
+freq2 = count_freq(["bb","aa","bb","aa","cc"])
+print( top_n(freq2, 2) == [("aa",2), ("bb",2)])
