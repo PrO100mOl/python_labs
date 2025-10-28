@@ -4,14 +4,14 @@ from ..lib.text import normalize, tokenize, count_freq, top_n
 
 def main() -> None:
     text = str(sys.stdin.read())
-    # text2 = 'Привет, мир! Привет!!!\n'
+    # text = 'Привет, мир! Привет!!!\n'
     tokens = tokenize(normalize(text))
     freq = count_freq(tokens)
 
     print(f"Всего слов: {len(tokens)}")
     print(f"Уникальных слов: {len(set(tokens))}")
     print("Топ-5:")
-    for w, c in sorted(freq.items())[::-1]:
+    for w, c in top_n(freq):
         print(f"{w}:{c}")
 
 if __name__ == "__main__":

@@ -63,16 +63,16 @@ def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
     return result
 
 
-print( normalize("ПрИвЕт\nМИр\t") == "привет мир")
-print( normalize("ёжик, Ёлка") == "ежик, елка")
+# print( normalize("ПрИвЕт\nМИр\t") == "привет мир")
+# print( normalize("ёжик, Ёлка") == "ежик, елка")
 
-print( tokenize("привет, мир!") == ["привет", "мир"])
-print( tokenize("по-настоящему круто") == ["по-настоящему", "круто"])
-print( tokenize("2025 год") == ["2025", "год"])
+# print( tokenize("привет, мир!") == ["привет", "мир"])
+# print( tokenize("по-настоящему круто") == ["по-настоящему", "круто"])
+# print( tokenize("2025 год") == ["2025", "год"])
 
-freq = count_freq(["a","b","a","c","b","a"])
-print( freq == {"a":3,"b":2,"c":1})
-print( top_n(freq, 2) == [("a",3), ("b",2)])
+# freq = count_freq(["a","b","a","c","b","a"])
+# print( freq == {"a":3,"b":2,"c":1})
+# print( top_n(freq, 2) == [("a",3), ("b",2)])
 
-freq2 = count_freq(["bb","aa","bb","aa","cc"])
-print( top_n(freq2, 2) == [("aa",2), ("bb",2)])
+# freq2 = count_freq(["bb","aa","bb","aa","cc"])
+# print( top_n(freq2, 2) == [("aa",2), ("bb",2)])
