@@ -321,7 +321,18 @@ def count_freq(tokens: list[str]) -> dict[str, int]:
 
 
 def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
-    return sorted(freq.items())[:n]
+    pairs: list[tuple[int, str]] = []
+    for w, c in freq.items():
+        pairs.append((-c, w))  
+    pairs.sort() 
+    result: list[tuple[str, int]] = []
+    i = 0
+    for c, w in pairs:
+        if i >= n:
+            break
+        result.append((w, -c))
+        i += 1
+    return result
 
 
 # Вернуть топ-N по убыванию частоты; при равенстве — по алфавиту слова.
