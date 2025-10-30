@@ -31,6 +31,6 @@ def write_csv(rows: Iterable[Sequence], path: str | Path,
 # ]
 # write_csv(rows, "data/lab04/gg.csv")
 
-# txt = read_text("data/lab04/input.txt")  # должен вернуть строку
-# print(txt)
-# write_csv([("word","count"),("test",3)], "data/lab04/check.csv")  # создаст CSV
+txt = read_text("data/lab04/input.txt")  # должен вернуть строку
+print(txt)
+write_csv([("word","count"),("test",3)], "data/lab04/check.csv")  # создаст CSV
