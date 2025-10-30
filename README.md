@@ -392,3 +392,70 @@ if __name__ == "__main__":
     main()
 ```
 ![Картинка 1](./images/lab03/text_stats.png)
+
+
+## Лабораторная работа 4
+
+### Задание 1
+```python
+from src.lib.text import normalize, tokenize, count_freq, top_n
+
+from pathlib import Path
+
+def read_text(path: str | Path, encoding: str = "utf-8") -> str:
+    p = Path(path)
+    # FileNotFoundError и UnicodeDecodeError пусть «всплывают» — это нормально
+    return p.read_text(encoding=encoding)
+
+import csv
+from pathlib import Path
+from typing import Iterable, Sequence
+
+def write_csv(rows: Iterable[Sequence], path: str | Path,
+              header: tuple[str, ...] | None = None) -> None:
+    p = Path(path)
+    rows = list(rows)
+    with p.open("w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        if header is not None:
+            w.writerow(header)
+        for r in rows:
+            w.writerow(r)
+
+txt = read_text("data/lab04/input.txt")  # должен вернуть строку
+print(txt)
+write_csv([("word","count"),("test",3)], "data/lab04/check.csv")  # создаст CSV
+```
+![Картинка 1](./images/lab04/io_txt_csv1.png)
+![Картинка 2](./images/lab04/lab4_input.png)
+![Картинка 3](./images/lab04/lab4_check.png)
+
+### Задание 2
+```python
+from src.lab04.io_txt_csv import read_text, write_csv
+from ..lib.text import normalize, tokenize, count_freq, top_n
+
+
+txt = read_text("data/lab04/input.txt")
+if txt == "":
+    print()
+    op = [("word","count")]
+    write_csv(op, "data/lab04/check.csv")
+else:
+    text = txt
+    tokens = tokenize(normalize(text))
+    freq = count_freq(tokens)
+
+    print(f"Всего слов: {len(tokens)}")
+    print(f"Уникальных слов: {len(set(tokens))}")
+    print("Топ-5:")
+    op = [("word","count")]
+    for w, c in top_n(freq):
+        op.append((w,c))
+        print(f"{w}:{c}")
+
+    write_csv(op, "data/lab04/check.csv")
+```
+![Картинка 1](./images/lab04/text_report.png)
+![Картинка 2](./images/lab04/report_check.png)
+
