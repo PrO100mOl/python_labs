@@ -19,10 +19,15 @@ def write_csv(rows: Iterable[Sequence], path: str | Path,
         w = csv.writer(f)
         if header is not None:
             w.writerow(header)
+        g = len(rows[0])
         for r in rows:
+            if len(r)!=g:
+                return "ValueError"
             w.writerow(r)
 
-
+txt = read_text("data/lab04/input.txt")  # должен вернуть строку
+print(txt)
+write_csv([("word","count"),("test",3)], "data/lab04/check.csv")  # создаст CSV
 
 # print(read_text("data/lab04/ff.txt", "utf-8"))
 # rows = [
@@ -31,6 +36,3 @@ def write_csv(rows: Iterable[Sequence], path: str | Path,
 # ]
 # write_csv(rows, "data/lab04/gg.csv")
 
-txt = read_text("data/lab04/input.txt")  # должен вернуть строку
-print(txt)
-write_csv([("word","count"),("test",3)], "data/lab04/check.csv")  # создаст CSV
