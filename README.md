@@ -419,7 +419,10 @@ def write_csv(rows: Iterable[Sequence], path: str | Path,
         w = csv.writer(f)
         if header is not None:
             w.writerow(header)
+        g = len(rows[0])
         for r in rows:
+            if len(r)!=g:
+                return "ValueError"
             w.writerow(r)
 
 txt = read_text("data/lab04/input.txt")  # должен вернуть строку
