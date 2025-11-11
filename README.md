@@ -550,7 +550,7 @@ csv_to_json('data/samples/people.csv','data/out/people_from_csv.json')
 
 
 
-### Задание 1
+### Задание 2
 ```python
 from pathlib import Path
 import csv
