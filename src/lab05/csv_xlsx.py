@@ -35,7 +35,6 @@ def csv_to_xlsx(csv_path: str | Path, xlsx_path: str | Path) -> None:
     for row in rows:
         ws.append(row)
 
-    # Автоширина колонок
     col_widths = [0] * len(header)
     for row in rows:
         for i, cell in enumerate(row):
