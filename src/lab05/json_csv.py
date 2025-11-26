@@ -5,6 +5,7 @@ from typing import Any
 
 # from src.lib.text import normalize, tokenize, count_freq, top_n
 
+
 def json_to_csv(json_path: str | Path, csv_path: str | Path) -> None:
     p_json = Path(json_path)
     p_csv = Path(csv_path)
@@ -20,11 +21,15 @@ def json_to_csv(json_path: str | Path, csv_path: str | Path) -> None:
             raise ValueError(f"Некорректный JSON: {e}") from e
 
     if not isinstance(data, list) or len(data) == 0:
-        raise ValueError("Пустой JSON или неподдерживаемая структура (нужен непустой список объектов).")
+        raise ValueError(
+            "Пустой JSON или неподдерживаемая структура (нужен непустой список объектов)."
+        )
 
     for i, item in enumerate(data):
         if not isinstance(item, dict):
-            raise ValueError(f"JSON должен быть списком словарей; элемент #{i} имеет тип {type(item).__name__}.")
+            raise ValueError(
+                f"JSON должен быть списком словарей; элемент #{i} имеет тип {type(item).__name__}."
+            )
 
     keys: set[str] = set()
     for obj in data:
@@ -44,6 +49,7 @@ def _sniff_dialect(sample: str) -> csv.Dialect:
         return csv.Sniffer().sniff(sample, delimiters=",;")
     except csv.Error:
         return csv.get_dialect("excel")
+
 
 def csv_to_json(csv_path: str | Path, json_path: str | Path) -> None:
     p_csv = Path(csv_path)
@@ -72,6 +78,6 @@ def csv_to_json(csv_path: str | Path, json_path: str | Path) -> None:
         json.dump(rows, jf, ensure_ascii=False, indent=2)
 
 
-
-json_to_csv('data/samples/people.json','data/out/people_from_json.csv')
-csv_to_json('data/samples/people.csv','data/out/people_from_csv.json')
+if __name__ == "__main__":
+    json_to_csv("data/samples/people.json", "data/out/people_from_json.csv")
+    csv_to_json("data/samples/people.csv", "data/out/people_from_csv.json")

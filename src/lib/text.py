@@ -1,16 +1,17 @@
 def normalize(text: str, *, casefold: bool = True, yo2e: bool = True) -> str:
-    
+
     if yo2e:
         for i in range(len(text)):
             if text[i] == "ё":
-                text = text[:i]+"е"+text[i+1:]
+                text = text[:i] + "е" + text[i + 1 :]
             elif text[i] == "Ё":
-                text = text[:i]+"Е"+text[i+1:]
+                text = text[:i] + "Е" + text[i + 1 :]
     if casefold:
         text = text.casefold()
-    
+
     text = " ".join(text.split())
     return text
+
 
 # Если casefold=True — привести к casefold (лучше, чем lower для Юникода).
 # Если yo2e=True — заменить все ё/Ё на е/Е.
@@ -18,41 +19,41 @@ def normalize(text: str, *, casefold: bool = True, yo2e: bool = True) -> str:
 
 import re
 
+
 def tokenize(text: str) -> list[str]:
-    g = ''
+    g = ""
     # h = 0
     for i in range(len(text)):
         # if h == 1:
         #     h = 0
         #     continue
-        if (text[i]+"g") == r"\g":
-            text = text[:i]+"  "+text[i+2:]
+        if (text[i] + "g") == r"\g":
+            text = text[:i] + "  " + text[i + 2 :]
             # h=1
-        elif not(re.fullmatch(r"[\w-]", text[i])):
-            text = text[:i]+" "+text[i+1:]
-    text = text.split()
-    return text
+        elif not (re.fullmatch(r"[\w-]", text[i])):
+            text = text[:i] + " " + text[i + 1 :]
+    tokens = text.split()
+    return tokens
 
 
 # Разбить на «слова» по небуквенно-цифровым разделителям.
 # В качестве слова считаем последовательности символов \w (буквы/цифры/подчёркивание) плюс дефис внутри слова (например, по-настоящему).
 # Числа (например, 2025) считаем словами.
 
+
 def count_freq(tokens: list[str]) -> dict[str, int]:
     freq: dict[str, int] = {}
     for t in tokens:
-        if t in freq:
-            freq[t.replace("ё","е")] += 1
-        else:
-            freq[t.replace("ё","е")] = 1
+        normalized = t.replace("ё", "е")
+        freq[normalized] = freq.get(normalized, 0) + 1
     return dict(sorted(freq.items()))
 
 
 def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
     pairs: list[tuple[int, str]] = []
     for w, c in freq.items():
-        pairs.append((-c, w))  
-    pairs.sort() 
+        pairs.append((-c, w))
+    pairs.sort()
     result: list[tuple[str, int]] = []
     i = 0
     for c, w in pairs:
