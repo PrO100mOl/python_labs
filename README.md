@@ -777,6 +777,98 @@ if __name__ == "__main__":
 ![Картинка 1](./images/lab06/cli_convert_csv2xlsx.png)
 
 
+## Лабораторная работа 7
+
+
+### python -m venv .venv
+```
+python_labs ❯ python -m venv .venv
+source .venv/bin/activate           # Windows: .venv\Scripts\activate
+python -m pip install pytest pytest-cov black
+
+Requirement already satisfied: pytest in ./.venv/lib/python3.13/site-packages (9.0.1)
+Requirement already satisfied: pytest-cov in ./.venv/lib/python3.13/site-packages (7.0.0)
+Requirement already satisfied: black in ./.venv/lib/python3.13/site-packages (25.11.0)
+Requirement already satisfied: iniconfig>=1.0.1 in ./.venv/lib/python3.13/site-packages (from pytest) (2.3.0)
+Requirement already satisfied: packaging>=22 in ./.venv/lib/python3.13/site-packages (from pytest) (25.0)
+Requirement already satisfied: pluggy<2,>=1.5 in ./.venv/lib/python3.13/site-packages (from pytest) (1.6.0)
+Requirement already satisfied: pygments>=2.7.2 in ./.venv/lib/python3.13/site-packages (from pytest) (2.19.2)
+Requirement already satisfied: coverage>=7.10.6 in ./.venv/lib/python3.13/site-packages (from coverage[toml]>=7.10.6->pytest-cov) (7.12.0)
+Requirement already satisfied: click>=8.0.0 in ./.venv/lib/python3.13/site-packages (from black) (8.3.1)
+Requirement already satisfied: mypy-extensions>=0.4.3 in ./.venv/lib/python3.13/site-packages (from black) (1.1.0)
+Requirement already satisfied: pathspec>=0.9.0 in ./.venv/lib/python3.13/site-packages (from black) (0.12.1)
+Requirement already satisfied: platformdirs>=2 in ./.venv/lib/python3.13/site-packages (from black) (4.5.0)
+Requirement already satisfied: pytokens>=0.3.0 in ./.venv/lib/python3.13/site-packages (from black) (0.3.0)
+```
+
+### pytest -ra
+```
+python_labs ❯ pytest -ra
+
+================================================================================= test session starts ==================================================================================
+platform linux -- Python 3.13.7, pytest-9.0.1, pluggy-1.6.0
+rootdir: /home/mol/Desktop/python_labs
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.0.0
+collected 24 items                                                                                                                                                                     
+
+tests/test_json_csv.py ..........                                                                                                                                                [ 41%]
+tests/test_text.py ..............                                                                                                                                                [100%]
+
+================================================================================== 24 passed in 0.05s ==================================================================================
+```
+
+### black --check .
+```
+python_labs ❯ black --check .
+No Python files are present to be formatted. Nothing to do 😴
+```
+
+### pytest --cov=src --cov-report=term-missing
+```
+python_labs ❯ pytest --cov=src --cov-report=term-missing  
+================================================================================= test session starts ==================================================================================
+platform linux -- Python 3.13.7, pytest-9.0.1, pluggy-1.6.0
+rootdir: /home/mol/Desktop/python_labs
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.0.0
+collected 24 items                                                                                                                                                                     
+
+tests/test_json_csv.py ..........                                                                                                                                                [ 41%]
+tests/test_text.py ..............                                                                                                                                                [100%]
+
+==================================================================================== tests coverage ====================================================================================
+___________________________________________________________________ coverage: platform linux, python 3.13.7-final-0 ____________________________________________________________________
+
+Name                       Stmts   Miss  Cover   Missing
+--------------------------------------------------------
+src/lab05/__init__.py          0      0   100%
+src/lab05/csv_xlsx.py         42     42     0%   1-53
+src/lab05/json_csv.py         56      6    89%   30, 50-51, 75, 82-83
+src/lab06/__init__.py          0      0   100%
+src/lab06/cli_convert.py      58     58     0%   1-76
+src/lab06/cli_text.py         45     45     0%   1-62
+src/lib/text.py               40      1    98%   31
+--------------------------------------------------------
+TOTAL                        241    152    37%
+================================================================================== 24 passed in 0.10s ==================================================================================
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
