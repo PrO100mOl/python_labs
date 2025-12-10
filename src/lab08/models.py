@@ -8,7 +8,7 @@ from typing import Any, Dict
 @dataclass
 class Student:
     fio: str
-    birthdate: str  # expected format YYYY-MM-DD
+    birthdate: str 
     group: str
     gpa: float
     _birthdate_date: date = field(init=False, repr=False)

@@ -1060,7 +1060,6 @@ class Group:
     def _validate_header(self, fieldnames: Iterable[str] | None) -> None:
         if list(fieldnames or []) != self.header:
             raise ValueError(
-                "CSV header must be 'fio,birthdate,group,gpa'"
             )
 
     def _read_all(self) -> List[Student]:
@@ -1167,7 +1166,7 @@ if __name__ == "__main__":
     demo_path = Path("data/lab09/students_demo.csv")
     group = Group(demo_path)
 
-    group._write_students([])  # reset demo file with only the header
+    group._write_students([]) 
     group.add(Student("Иванов Иван", "2003-10-10", "БИВТ-21-1", 4.3))
     group.add(Student("Петров Петр", "2002-05-12", "БИВТ-21-2", 4.7))
     group.add(Student("Сидорова Анна", "2004-07-01", "БИВТ-21-1", 4.9))
@@ -1256,10 +1255,10 @@ class Stack:
     def is_empty(self) -> bool:
         return not self._data
 
-    def __len__(self) -> int:  # pragma: no cover - trivial
+    def __len__(self) -> int: 
         return len(self._data)
 
-    def __repr__(self) -> str:  # pragma: no cover - representational
+    def __repr__(self) -> str: 
         return f"Stack({self._data!r})"
 
 
@@ -1269,7 +1268,6 @@ class Queue:
         self._data: deque[Any] = deque(items or [])
 
     def enqueue(self, item: Any) -> None:
-        """Add *item* to the end of the queue."""
         self._data.append(item)
 
     def dequeue(self) -> Any:
@@ -1283,10 +1281,10 @@ class Queue:
     def is_empty(self) -> bool:
         return not self._data
 
-    def __len__(self) -> int:  # pragma: no cover - trivial
+    def __len__(self) -> int: 
         return len(self._data)
 
-    def __repr__(self) -> str:  # pragma: no cover - representational
+    def __repr__(self) -> str: 
         return f"Queue({list(self._data)!r})"
 
 
@@ -1325,7 +1323,7 @@ class Node:
         self.value = value
         self.next = next
 
-    def __repr__(self) -> str:  # pragma: no cover - representational
+    def __repr__(self) -> str:  
         return f"Node({self.value!r})"
 
 
@@ -1344,13 +1342,12 @@ class SinglyLinkedList:
         if self.head is None:
             self.head = self.tail = new_node
         else:
-            assert self.tail is not None  # for type checkers
+            assert self.tail is not None 
             self.tail.next = new_node
             self.tail = new_node
         self._size += 1
 
     def prepend(self, value: Any) -> None:
-        """Insert *value* at the beginning of the list."""
         new_node = Node(value, self.head)
         self.head = new_node
         if self.tail is None:
@@ -1399,7 +1396,7 @@ class SinglyLinkedList:
     def _node_at(self, idx: int) -> Node:
         current = self.head
         for _ in range(idx):
-            assert current is not None  # for type checkers
+            assert current is not None 
             current = current.next
         assert current is not None
         return current
@@ -1410,13 +1407,13 @@ class SinglyLinkedList:
             yield current.value
             current = current.next
 
-    def __len__(self) -> int:  # pragma: no cover - trivial
+    def __len__(self) -> int: 
         return self._size
 
-    def __repr__(self) -> str:  # pragma: no cover - representational
+    def __repr__(self) -> str: 
         return f"SinglyLinkedList([{', '.join(repr(v) for v in self)}])"
 
-    def __str__(self) -> str:  # pragma: no cover - representational
+    def __str__(self) -> str: 
         parts = []
         current = self.head
         while current is not None:

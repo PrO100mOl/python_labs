@@ -4,7 +4,6 @@ from typing import Any, Iterable, Iterator
 
 
 class Node:
-    """A single node for :class:`SinglyLinkedList`."""
 
     __slots__ = ("value", "next")
 
@@ -12,12 +11,11 @@ class Node:
         self.value = value
         self.next = next
 
-    def __repr__(self) -> str:  # pragma: no cover - representational
+    def __repr__(self) -> str: 
         return f"Node({self.value!r})"
 
 
 class SinglyLinkedList:
-    """A simple singly linked list implementation."""
 
     def __init__(self, values: Iterable[Any] | None = None) -> None:
         self.head: Node | None = None
@@ -28,18 +26,16 @@ class SinglyLinkedList:
                 self.append(value)
 
     def append(self, value: Any) -> None:
-        """Append *value* to the end of the list."""
         new_node = Node(value)
         if self.head is None:
             self.head = self.tail = new_node
         else:
-            assert self.tail is not None  # for type checkers
+            assert self.tail is not None
             self.tail.next = new_node
             self.tail = new_node
         self._size += 1
 
     def prepend(self, value: Any) -> None:
-        """Insert *value* at the beginning of the list."""
         new_node = Node(value, self.head)
         self.head = new_node
         if self.tail is None:
@@ -47,11 +43,6 @@ class SinglyLinkedList:
         self._size += 1
 
     def insert(self, idx: int, value: Any) -> None:
-        """Insert *value* at position *idx*.
-
-        Raises:
-            IndexError: when *idx* is outside ``[0, len(list)]``.
-        """
         if idx < 0 or idx > self._size:
             raise IndexError("Index out of range")
         if idx == 0:
@@ -67,11 +58,6 @@ class SinglyLinkedList:
         self._size += 1
 
     def remove(self, value: Any) -> None:
-        """Remove the first occurrence of *value* from the list.
-
-        Raises:
-            ValueError: when *value* is not present in the list.
-        """
         if self.head is None:
             raise ValueError("List is empty")
 
@@ -96,13 +82,9 @@ class SinglyLinkedList:
         raise ValueError(f"{value!r} not found in list")
 
     def _node_at(self, idx: int) -> Node:
-        """Return node at *idx* (0-based).
-
-        Assumes the index is valid.
-        """
         current = self.head
         for _ in range(idx):
-            assert current is not None  # for type checkers
+            assert current is not None 
             current = current.next
         assert current is not None
         return current
@@ -113,13 +95,13 @@ class SinglyLinkedList:
             yield current.value
             current = current.next
 
-    def __len__(self) -> int:  # pragma: no cover - trivial
+    def __len__(self) -> int: 
         return self._size
 
-    def __repr__(self) -> str:  # pragma: no cover - representational
+    def __repr__(self) -> str:  
         return f"SinglyLinkedList([{', '.join(repr(v) for v in self)}])"
 
-    def __str__(self) -> str:  # pragma: no cover - representational
+    def __str__(self) -> str: 
         parts = []
         current = self.head
         while current is not None:

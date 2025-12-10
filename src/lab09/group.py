@@ -8,7 +8,6 @@ from src.lab08.models import Student
 
 
 class Group:
-    """CSV-backed storage for :class:`Student` records with CRUD helpers."""
 
     header = ["fio", "birthdate", "group", "gpa"]
 
@@ -26,7 +25,6 @@ class Group:
     def _validate_header(self, fieldnames: Iterable[str] | None) -> None:
         if list(fieldnames or []) != self.header:
             raise ValueError(
-                "CSV header must be 'fio,birthdate,group,gpa'"
             )
 
     def _read_all(self) -> List[Student]:
@@ -57,12 +55,10 @@ class Group:
                 writer.writerow(student.to_dict())
 
     def list(self) -> List[Student]:
-        """Return all students from storage."""
 
         return self._read_all()
 
     def add(self, student: Student) -> None:
-        """Append a new student to the CSV storage."""
 
         if not isinstance(student, Student):
             raise TypeError("add() expects a Student instance")
@@ -72,13 +68,11 @@ class Group:
         self._write_students(students)
 
     def find(self, substr: str) -> List[Student]:
-        """Find students whose ``fio`` contains the given substring (case-insensitive)."""
 
         needle = substr.lower()
         return [s for s in self._read_all() if needle in s.fio.lower()]
 
     def remove(self, fio: str) -> int:
-        """Remove students by full name. Returns the number of deleted records."""
 
         students = self._read_all()
         remaining = [s for s in students if s.fio != fio]
@@ -88,7 +82,6 @@ class Group:
         return removed
 
     def update(self, fio: str, **fields) -> bool:
-        """Update the first student matching ``fio`` with provided field values."""
 
         students = self._read_all()
         updated = False
@@ -104,7 +97,6 @@ class Group:
         return updated
 
     def stats(self) -> dict:
-        """Return aggregated statistics for the group (counts and GPA metrics)."""
 
         students = self._read_all()
         if not students:
@@ -139,7 +131,7 @@ if __name__ == "__main__":
     demo_path = Path("data/lab09/students_demo.csv")
     group = Group(demo_path)
 
-    group._write_students([])  # reset demo file with only the header
+    group._write_students([]) 
     group.add(Student("Иванов Иван", "2003-10-10", "БИВТ-21-1", 4.3))
     group.add(Student("Петров Петр", "2002-05-12", "БИВТ-21-2", 4.7))
     group.add(Student("Сидорова Анна", "2004-07-01", "БИВТ-21-1", 4.9))
