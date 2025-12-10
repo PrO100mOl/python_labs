@@ -1043,7 +1043,6 @@ from src.lab08.models import Student
 
 
 class Group:
-    """CSV-backed storage for :class:`Student` records with CRUD helpers."""
 
     header = ["fio", "birthdate", "group", "gpa"]
 
@@ -1092,12 +1091,10 @@ class Group:
                 writer.writerow(student.to_dict())
 
     def list(self) -> List[Student]:
-        """Return all students from storage."""
 
         return self._read_all()
 
     def add(self, student: Student) -> None:
-        """Append a new student to the CSV storage."""
 
         if not isinstance(student, Student):
             raise TypeError("add() expects a Student instance")
@@ -1107,13 +1104,11 @@ class Group:
         self._write_students(students)
 
     def find(self, substr: str) -> List[Student]:
-        """Find students whose ``fio`` contains the given substring (case-insensitive)."""
 
         needle = substr.lower()
         return [s for s in self._read_all() if needle in s.fio.lower()]
 
     def remove(self, fio: str) -> int:
-        """Remove students by full name. Returns the number of deleted records."""
 
         students = self._read_all()
         remaining = [s for s in students if s.fio != fio]
@@ -1123,7 +1118,6 @@ class Group:
         return removed
 
     def update(self, fio: str, **fields) -> bool:
-        """Update the first student matching ``fio`` with provided field values."""
 
         students = self._read_all()
         updated = False
@@ -1139,7 +1133,6 @@ class Group:
         return updated
 
     def stats(self) -> dict:
-        """Return aggregated statistics for the group (counts and GPA metrics)."""
 
         students = self._read_all()
         if not students:
@@ -1245,34 +1238,22 @@ from typing import Any, Iterable
 
 
 class Stack:
-    """Simple LIFO stack based on a Python list."""
 
     def __init__(self, items: Iterable[Any] | None = None) -> None:
         self._data: list[Any] = list(items) if items is not None else []
 
     def push(self, item: Any) -> None:
-        """Place *item* on top of the stack."""
         self._data.append(item)
 
     def pop(self) -> Any:
-        """Remove and return the top element.
-
-        Raises:
-            IndexError: if the stack is empty.
-        """
         if not self._data:
             raise IndexError("Stack is empty")
         return self._data.pop()
 
     def peek(self) -> Any | None:
-        """Return the top element without removing it.
-
-        Returns ``None`` when the stack is empty.
-        """
         return self._data[-1] if self._data else None
 
     def is_empty(self) -> bool:
-        """Return ``True`` when the stack holds no elements."""
         return not self._data
 
     def __len__(self) -> int:  # pragma: no cover - trivial
@@ -1283,7 +1264,6 @@ class Stack:
 
 
 class Queue:
-    """FIFO queue backed by :class:`collections.deque`."""
 
     def __init__(self, items: Iterable[Any] | None = None) -> None:
         self._data: deque[Any] = deque(items or [])
@@ -1293,24 +1273,14 @@ class Queue:
         self._data.append(item)
 
     def dequeue(self) -> Any:
-        """Remove and return the element from the front.
-
-        Raises:
-            IndexError: if the queue is empty.
-        """
         if not self._data:
             raise IndexError("Queue is empty")
         return self._data.popleft()
 
     def peek(self) -> Any | None:
-        """Return the front element without removing it.
-
-        Returns ``None`` when the queue is empty.
-        """
         return self._data[0] if self._data else None
 
     def is_empty(self) -> bool:
-        """Return ``True`` when the queue holds no elements."""
         return not self._data
 
     def __len__(self) -> int:  # pragma: no cover - trivial
@@ -1348,7 +1318,6 @@ from typing import Any, Iterable, Iterator
 
 
 class Node:
-    """A single node for :class:`SinglyLinkedList`."""
 
     __slots__ = ("value", "next")
 
@@ -1361,7 +1330,6 @@ class Node:
 
 
 class SinglyLinkedList:
-    """A simple singly linked list implementation."""
 
     def __init__(self, values: Iterable[Any] | None = None) -> None:
         self.head: Node | None = None
@@ -1372,7 +1340,6 @@ class SinglyLinkedList:
                 self.append(value)
 
     def append(self, value: Any) -> None:
-        """Append *value* to the end of the list."""
         new_node = Node(value)
         if self.head is None:
             self.head = self.tail = new_node
@@ -1391,11 +1358,6 @@ class SinglyLinkedList:
         self._size += 1
 
     def insert(self, idx: int, value: Any) -> None:
-        """Insert *value* at position *idx*.
-
-        Raises:
-            IndexError: when *idx* is outside ``[0, len(list)]``.
-        """
         if idx < 0 or idx > self._size:
             raise IndexError("Index out of range")
         if idx == 0:
@@ -1411,11 +1373,6 @@ class SinglyLinkedList:
         self._size += 1
 
     def remove(self, value: Any) -> None:
-        """Remove the first occurrence of *value* from the list.
-
-        Raises:
-            ValueError: when *value* is not present in the list.
-        """
         if self.head is None:
             raise ValueError("List is empty")
 
@@ -1440,10 +1397,6 @@ class SinglyLinkedList:
         raise ValueError(f"{value!r} not found in list")
 
     def _node_at(self, idx: int) -> Node:
-        """Return node at *idx* (0-based).
-
-        Assumes the index is valid.
-        """
         current = self.head
         for _ in range(idx):
             assert current is not None  # for type checkers
