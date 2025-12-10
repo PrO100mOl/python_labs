@@ -859,21 +859,660 @@ TOTAL                        241    152    37%
 
 ## Лабораторная работа 8
 
+### models.py 
+```python
+from __future__ import annotations
 
-### python -m src.lab08.models
-``` python
+from dataclasses import dataclass, field
+from datetime import date
+from typing import Any, Dict
 
+
+@dataclass
+class Student:
+    fio: str
+    birthdate: str 
+    group: str
+    gpa: float
+    _birthdate_date: date = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        try:
+            parsed_birthdate = date.fromisoformat(self.birthdate)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("birthdate must be in YYYY-MM-DD format") from exc
+
+        if not (0 <= self.gpa <= 5):
+            raise ValueError("gpa must be between 0 and 5")
+
+        self._birthdate_date = parsed_birthdate
+
+    def age(self) -> int:
+        today = date.today()
+        years = today.year - self._birthdate_date.year
+        if (today.month, today.day) < (self._birthdate_date.month, self._birthdate_date.day):
+            years -= 1
+        return years
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "fio": self.fio,
+            "birthdate": self.birthdate,
+            "group": self.group,
+            "gpa": self.gpa,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Student":
+        required_keys = {"fio", "birthdate", "group", "gpa"}
+        if not required_keys.issubset(data):
+            missing = required_keys - set(data)
+            raise ValueError(f"Missing fields for Student: {', '.join(sorted(missing))}")
+
+        try:
+            fio = str(data["fio"])
+            birthdate = str(data["birthdate"])
+            group = str(data["group"])
+            gpa = float(data["gpa"])
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Invalid field types for Student") from exc
+
+        return cls(fio=fio, birthdate=birthdate, group=group, gpa=gpa)
+
+    def __str__(self) -> str:
+        return f"{self.fio} ({self.group}) — born {self.birthdate}, GPA: {self.gpa:.2f}"
+
+
+if __name__ == "__main__":
+    example_student = Student(
+        fio="Иванов Иван",
+        birthdate="2003-10-10",
+        group="БИВТ-21-1",
+        gpa=4.5,
+    )
+    print(example_student)
+    print(f"Age: {example_student.age()}")
+    print("As dict:", example_student.to_dict())
+```
+
+### serialize.py 
+```python
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Iterable, List
+
+from .models import Student
+
+
+def students_to_json(students: Iterable[Student], path: str | Path) -> None:
+    student_list: List[Student] = list(students)
+    if not all(isinstance(student, Student) for student in student_list):
+        raise TypeError("students_to_json expects an iterable of Student objects")
+
+    data = [student.to_dict() for student in student_list]
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+
+
+def students_from_json(path: str | Path) -> List[Student]:
+    input_path = Path(path)
+    with input_path.open(encoding="utf-8") as file:
+        raw_data = json.load(file)
+
+    if not isinstance(raw_data, list):
+        raise ValueError("JSON file must contain a list of students")
+
+    students: List[Student] = []
+    for entry in raw_data:
+        if not isinstance(entry, dict):
+            raise ValueError("Each student entry must be an object")
+        students.append(Student.from_dict(entry))
+
+    return students
+
+
+if __name__ == "__main__":
+    demo_students = [
+        Student("Иванов Иван", "2003-10-10", "БИВТ-21-1", 4.3),
+        Student("Петров Петр", "2002-05-12", "БИВТ-21-2", 4.7),
+    ]
+    output = Path("data/lab08/students_demo.json")
+    students_to_json(demo_students, output)
+    print(f"Saved {len(demo_students)} students to {output}")
+    loaded = students_from_json(output)
+    print("Loaded:")
+    for student in loaded:
+        print(" -", student)
+```
+
+### файл students
+```
+[
+  {
+    "fio": "Иванов Иван Иванович",
+    "birthdate": "2002-04-15",
+    "group": "SE-01",
+    "gpa": 4.5
+  },
+  {
+    "fio": "Петрова Анна Сергеевна",
+    "birthdate": "2003-11-02",
+    "group": "SE-02",
+    "gpa": 4.8
+  },
+  {
+    "fio": "Smith John",
+    "birthdate": "2001-07-22",
+    "group": "DS-03",
+    "gpa": 3.9
+  }
+]
 ```
 
 
+### запуск __name__ == "__main__"
+``` 
+python_labs ❯ python -m src.lab08.models                     
+Иванов Иван (БИВТ-21-1) — born 2003-10-10, GPA: 4.50
+Age: 22
+As dict: {'fio': 'Иванов Иван', 'birthdate': '2003-10-10', 'group': 'БИВТ-21-1', 'gpa': 4.5}
+
+python_labs ❯ python -m src.lab08.serialize                          
+Saved 2 students to data/lab08/students_demo.json
+Loaded:
+ - Иванов Иван (БИВТ-21-1) — born 2003-10-10, GPA: 4.30
+ - Петров Петр (БИВТ-21-2) — born 2002-05-12, GPA: 4.70
+```
 
 
+## Лабораторная работа 9
+
+### group.py 
+```python
+from __future__ import annotations
+
+import csv
+from pathlib import Path
+from typing import Iterable, List
+
+from src.lab08.models import Student
 
 
+class Group:
+    """CSV-backed storage for :class:`Student` records with CRUD helpers."""
+
+    header = ["fio", "birthdate", "group", "gpa"]
+
+    def __init__(self, storage_path: str | Path):
+        self.path = Path(storage_path)
+        self._ensure_storage_exists()
+
+    def _ensure_storage_exists(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        if not self.path.exists():
+            with self.path.open("w", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                writer.writerow(self.header)
+
+    def _validate_header(self, fieldnames: Iterable[str] | None) -> None:
+        if list(fieldnames or []) != self.header:
+            raise ValueError(
+                "CSV header must be 'fio,birthdate,group,gpa'"
+            )
+
+    def _read_all(self) -> List[Student]:
+        with self.path.open(newline="", encoding="utf-8") as file:
+            reader = csv.DictReader(file)
+            self._validate_header(reader.fieldnames)
+            students: List[Student] = []
+            for row in reader:
+                if not row:
+                    continue
+                students.append(
+                    Student.from_dict(
+                        {
+                            "fio": row.get("fio", ""),
+                            "birthdate": row.get("birthdate", ""),
+                            "group": row.get("group", ""),
+                            "gpa": row.get("gpa", 0),
+                        }
+                    )
+                )
+            return students
+
+    def _write_students(self, students: Iterable[Student]) -> None:
+        with self.path.open("w", newline="", encoding="utf-8") as file:
+            writer = csv.DictWriter(file, fieldnames=self.header)
+            writer.writeheader()
+            for student in students:
+                writer.writerow(student.to_dict())
+
+    def list(self) -> List[Student]:
+        """Return all students from storage."""
+
+        return self._read_all()
+
+    def add(self, student: Student) -> None:
+        """Append a new student to the CSV storage."""
+
+        if not isinstance(student, Student):
+            raise TypeError("add() expects a Student instance")
+
+        students = self._read_all()
+        students.append(student)
+        self._write_students(students)
+
+    def find(self, substr: str) -> List[Student]:
+        """Find students whose ``fio`` contains the given substring (case-insensitive)."""
+
+        needle = substr.lower()
+        return [s for s in self._read_all() if needle in s.fio.lower()]
+
+    def remove(self, fio: str) -> int:
+        """Remove students by full name. Returns the number of deleted records."""
+
+        students = self._read_all()
+        remaining = [s for s in students if s.fio != fio]
+        removed = len(students) - len(remaining)
+        if removed:
+            self._write_students(remaining)
+        return removed
+
+    def update(self, fio: str, **fields) -> bool:
+        """Update the first student matching ``fio`` with provided field values."""
+
+        students = self._read_all()
+        updated = False
+        for idx, student in enumerate(students):
+            if student.fio == fio:
+                data = student.to_dict()
+                data.update(fields)
+                students[idx] = Student.from_dict(data)
+                updated = True
+                break
+        if updated:
+            self._write_students(students)
+        return updated
+
+    def stats(self) -> dict:
+        """Return aggregated statistics for the group (counts and GPA metrics)."""
+
+        students = self._read_all()
+        if not students:
+            return {
+                "count": 0,
+                "min_gpa": None,
+                "max_gpa": None,
+                "avg_gpa": None,
+                "groups": {},
+                "top_5_students": [],
+            }
+
+        gpas = [s.gpa for s in students]
+        groups_count: dict[str, int] = {}
+        for student in students:
+            groups_count[student.group] = groups_count.get(student.group, 0) + 1
+
+        top_students = sorted(students, key=lambda s: s.gpa, reverse=True)[:5]
+        return {
+            "count": len(students),
+            "min_gpa": min(gpas),
+            "max_gpa": max(gpas),
+            "avg_gpa": sum(gpas) / len(gpas),
+            "groups": groups_count,
+            "top_5_students": [
+                {"fio": s.fio, "gpa": s.gpa} for s in top_students
+            ],
+        }
 
 
+if __name__ == "__main__":
+    demo_path = Path("data/lab09/students_demo.csv")
+    group = Group(demo_path)
+
+    group._write_students([])  # reset demo file with only the header
+    group.add(Student("Иванов Иван", "2003-10-10", "БИВТ-21-1", 4.3))
+    group.add(Student("Петров Петр", "2002-05-12", "БИВТ-21-2", 4.7))
+    group.add(Student("Сидорова Анна", "2004-07-01", "БИВТ-21-1", 4.9))
+
+    print("All students:")
+    for s in group.list():
+        print(" -", s)
+
+    print("\nFind 'Иван':")
+    for s in group.find("Иван"):
+        print(" *", s)
+
+    print("\nUpdating GPA for Петров Петр to 4.9...")
+    group.update("Петров Петр", gpa=4.9)
+    print("Updated entry:")
+    for s in group.find("Петров"):
+        print(" *", s)
+
+    print("\nRemoving Сидорова Анна")
+    group.remove("Сидорова Анна")
+    for s in group.list():
+        print(" -", s)
+
+    print("\nStats:")
+    print(group.stats())
+
+```
+
+### students.csv
+```
+fio,birthdate,group,gpa
+Иванов Иван,2003-10-10,БИВТ-21-1,4.3
+Петрова Анна,2002-04-15,SE-01,4.8
+Сидоров Павел,2004-06-02,BD-01,3.9
+```
 
 
+### python -m src.lab09.group
+```
+python_labs ❯ python -m src.lab09.group    
+All students:
+ - Иванов Иван (БИВТ-21-1) — born 2003-10-10, GPA: 4.30
+ - Петров Петр (БИВТ-21-2) — born 2002-05-12, GPA: 4.70
+ - Сидорова Анна (БИВТ-21-1) — born 2004-07-01, GPA: 4.90
+
+Find 'Иван':
+ * Иванов Иван (БИВТ-21-1) — born 2003-10-10, GPA: 4.30
+
+Updating GPA for Петров Петр to 4.9...
+Updated entry:
+ * Петров Петр (БИВТ-21-2) — born 2002-05-12, GPA: 4.90
+
+Removing Сидорова Анна
+ - Иванов Иван (БИВТ-21-1) — born 2003-10-10, GPA: 4.30
+ - Петров Петр (БИВТ-21-2) — born 2002-05-12, GPA: 4.90
+
+Stats:
+{'count': 2, 'min_gpa': 4.3, 'max_gpa': 4.9, 'avg_gpa': 4.6, 'groups': {'БИВТ-21-1': 1, 'БИВТ-21-2': 1}, 'top_5_students': [{'fio': 'Петров Петр', 'gpa': 4.9}, {'fio': 'Иванов Иван', 'gpa': 4.3}]}
+```
+
+
+## Лабораторная работа 10
+
+### structures.py
+```python
+from collections import deque
+from typing import Any, Iterable
+
+
+class Stack:
+    """Simple LIFO stack based on a Python list."""
+
+    def __init__(self, items: Iterable[Any] | None = None) -> None:
+        self._data: list[Any] = list(items) if items is not None else []
+
+    def push(self, item: Any) -> None:
+        """Place *item* on top of the stack."""
+        self._data.append(item)
+
+    def pop(self) -> Any:
+        """Remove and return the top element.
+
+        Raises:
+            IndexError: if the stack is empty.
+        """
+        if not self._data:
+            raise IndexError("Stack is empty")
+        return self._data.pop()
+
+    def peek(self) -> Any | None:
+        """Return the top element without removing it.
+
+        Returns ``None`` when the stack is empty.
+        """
+        return self._data[-1] if self._data else None
+
+    def is_empty(self) -> bool:
+        """Return ``True`` when the stack holds no elements."""
+        return not self._data
+
+    def __len__(self) -> int:  # pragma: no cover - trivial
+        return len(self._data)
+
+    def __repr__(self) -> str:  # pragma: no cover - representational
+        return f"Stack({self._data!r})"
+
+
+class Queue:
+    """FIFO queue backed by :class:`collections.deque`."""
+
+    def __init__(self, items: Iterable[Any] | None = None) -> None:
+        self._data: deque[Any] = deque(items or [])
+
+    def enqueue(self, item: Any) -> None:
+        """Add *item* to the end of the queue."""
+        self._data.append(item)
+
+    def dequeue(self) -> Any:
+        """Remove and return the element from the front.
+
+        Raises:
+            IndexError: if the queue is empty.
+        """
+        if not self._data:
+            raise IndexError("Queue is empty")
+        return self._data.popleft()
+
+    def peek(self) -> Any | None:
+        """Return the front element without removing it.
+
+        Returns ``None`` when the queue is empty.
+        """
+        return self._data[0] if self._data else None
+
+    def is_empty(self) -> bool:
+        """Return ``True`` when the queue holds no elements."""
+        return not self._data
+
+    def __len__(self) -> int:  # pragma: no cover - trivial
+        return len(self._data)
+
+    def __repr__(self) -> str:  # pragma: no cover - representational
+        return f"Queue({list(self._data)!r})"
+
+
+if __name__ == "__main__":
+    print("--- Stack demo ---")
+    stack = Stack([1, 2, 3])
+    print("Initial:", stack)
+    stack.push(4)
+    print("After push:", stack)
+    print("Peek:", stack.peek())
+    print("Pop:", stack.pop())
+    print("Final:", stack)
+
+    print("\n--- Queue demo ---")
+    queue = Queue(["a", "b", "c"])
+    print("Initial:", queue)
+    queue.enqueue("d")
+    print("After enqueue:", queue)
+    print("Peek:", queue.peek())
+    print("Dequeue:", queue.dequeue())
+    print("Final:", queue)
+```
+
+### linked_list.py
+```python
+from __future__ import annotations
+
+from typing import Any, Iterable, Iterator
+
+
+class Node:
+    """A single node for :class:`SinglyLinkedList`."""
+
+    __slots__ = ("value", "next")
+
+    def __init__(self, value: Any, next: Node | None = None) -> None:
+        self.value = value
+        self.next = next
+
+    def __repr__(self) -> str:  # pragma: no cover - representational
+        return f"Node({self.value!r})"
+
+
+class SinglyLinkedList:
+    """A simple singly linked list implementation."""
+
+    def __init__(self, values: Iterable[Any] | None = None) -> None:
+        self.head: Node | None = None
+        self.tail: Node | None = None
+        self._size: int = 0
+        if values is not None:
+            for value in values:
+                self.append(value)
+
+    def append(self, value: Any) -> None:
+        """Append *value* to the end of the list."""
+        new_node = Node(value)
+        if self.head is None:
+            self.head = self.tail = new_node
+        else:
+            assert self.tail is not None  # for type checkers
+            self.tail.next = new_node
+            self.tail = new_node
+        self._size += 1
+
+    def prepend(self, value: Any) -> None:
+        """Insert *value* at the beginning of the list."""
+        new_node = Node(value, self.head)
+        self.head = new_node
+        if self.tail is None:
+            self.tail = new_node
+        self._size += 1
+
+    def insert(self, idx: int, value: Any) -> None:
+        """Insert *value* at position *idx*.
+
+        Raises:
+            IndexError: when *idx* is outside ``[0, len(list)]``.
+        """
+        if idx < 0 or idx > self._size:
+            raise IndexError("Index out of range")
+        if idx == 0:
+            self.prepend(value)
+            return
+        if idx == self._size:
+            self.append(value)
+            return
+
+        prev = self._node_at(idx - 1)
+        new_node = Node(value, prev.next)
+        prev.next = new_node
+        self._size += 1
+
+    def remove(self, value: Any) -> None:
+        """Remove the first occurrence of *value* from the list.
+
+        Raises:
+            ValueError: when *value* is not present in the list.
+        """
+        if self.head is None:
+            raise ValueError("List is empty")
+
+        if self.head.value == value:
+            self.head = self.head.next
+            if self.head is None:
+                self.tail = None
+            self._size -= 1
+            return
+
+        prev = self.head
+        current = self.head.next
+        while current is not None:
+            if current.value == value:
+                prev.next = current.next
+                if current is self.tail:
+                    self.tail = prev
+                self._size -= 1
+                return
+            prev, current = current, current.next
+
+        raise ValueError(f"{value!r} not found in list")
+
+    def _node_at(self, idx: int) -> Node:
+        """Return node at *idx* (0-based).
+
+        Assumes the index is valid.
+        """
+        current = self.head
+        for _ in range(idx):
+            assert current is not None  # for type checkers
+            current = current.next
+        assert current is not None
+        return current
+
+    def __iter__(self) -> Iterator[Any]:
+        current = self.head
+        while current is not None:
+            yield current.value
+            current = current.next
+
+    def __len__(self) -> int:  # pragma: no cover - trivial
+        return self._size
+
+    def __repr__(self) -> str:  # pragma: no cover - representational
+        return f"SinglyLinkedList([{', '.join(repr(v) for v in self)}])"
+
+    def __str__(self) -> str:  # pragma: no cover - representational
+        parts = []
+        current = self.head
+        while current is not None:
+            parts.append(f"[{current.value!r}]")
+            current = current.next
+        parts.append("None")
+        return " -> ".join(parts)
+
+
+if __name__ == "__main__":
+    ll = SinglyLinkedList([1, 2, 4])
+    print("Initial:", ll)
+    ll.prepend(0)
+    ll.append(5)
+    ll.insert(3, 3)
+    print("After modifications:", ll)
+    ll.remove(2)
+    print("After removing 2:", ll)
+    print("Length:", len(ll))
+    print("Iterating:", list(ll))
+```
+
+### python -m src.lab10.structures
+```
+python_labs ❯ python -m src.lab10.structures                               
+--- Stack demo ---
+Initial: Stack([1, 2, 3])
+After push: Stack([1, 2, 3, 4])
+Peek: 4
+Pop: 4
+Final: Stack([1, 2, 3])
+
+--- Queue demo ---
+Initial: Queue(['a', 'b', 'c'])
+After enqueue: Queue(['a', 'b', 'c', 'd'])
+Peek: a
+Dequeue: a
+Final: Queue(['b', 'c', 'd'])
+```
+
+### python -m src.lab10.linked_list
+```
+python_labs ❯ python -m src.lab10.linked_list                                    
+Initial: [1] -> [2] -> [4] -> None
+After modifications: [0] -> [1] -> [2] -> [3] -> [4] -> [5] -> None
+After removing 2: [0] -> [1] -> [3] -> [4] -> [5] -> None
+Length: 5
+Iterating: [0, 1, 3, 4, 5]
+```
 
 
 
